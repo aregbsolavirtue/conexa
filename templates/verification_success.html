@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Verification Submitted</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <a href="/"> Back Home </a>
+    </nav>
+
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon">←</span>
+
+        <span>Back</span>
+      </button>
+    </div>
+
+    <section class="verification-result-section">
+      <div class="verification-result-card">
+        <div class="result-icon pending-icon">✓</div>
+
+        <p class="result-label">VERIFICATION REQUEST</p>
+
+        <h1>Request Submitted</h1>
+
+        <p class="result-message">
+          Your verification request has been successfully submitted to the
+          Conexa team.
+        </p>
+
+        <div class="result-status">
+          <span class="status-dot"></span>
+
+          <span> Verification Pending </span>
+        </div>
+
+        <p class="result-details">
+          Our team will review the information you provided. Your verified badge
+          will appear on your profile once your request has been approved.
+        </p>
+
+        <div class="result-actions">
+          <a href="/" class="result-primary-button"> Return Home </a>
+
+          <button onclick="history.back()" class="result-secondary-button">
+            View Profile
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+
+      <p class="copyright">© 2026 Conexa</p>
+    </footer>
+  </body>
+</html>

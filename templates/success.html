@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Profile Created</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <a href="/"> Back Home </a>
+    </nav>
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon">←</span>
+        <span>Back</span>
+      </button>
+    </div>
+
+    <section class="success-section">
+      <div class="success-container">
+        <div class="success-icon">✓</div>
+
+        <p class="small-heading">WELCOME TO CONEXA</p>
+
+        <h1>Your artisan profile has been created!</h1>
+
+        <p>
+          Customers can now find your services when they search for artisans in
+          your area.
+        </p>
+
+        <a href="/" class="success-button"> Back to Home </a>
+      </div>
+    </section>
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Request Service</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <a href="/"> Back Home </a>
+    </nav>
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon">←</span>
+        <span>Back</span>
+      </button>
+    </div>
+
+    <section class="register-section">
+      <div class="register-container">
+        <p class="small-heading">REQUEST SERVICE</p>
+
+        <h1>Request {{ artisan["service"] }}</h1>
+
+        <p class="register-description">
+          You are requesting a service from
+          <strong>{{ artisan["name"] }}</strong>. Tell the artisan what you
+          need.
+        </p>
+
+        <form
+          action="/request/{{ artisan['id'] }}"
+          method="POST"
+          class="register-form"
+        >
+          <div class="form-group">
+            <label for="customer_name"> Your Name </label>
+
+            <input
+              type="text"
+              id="customer_name"
+              name="customer_name"
+              placeholder="Enter your name"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone"> Phone Number </label>
+
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              placeholder="e.g. 08012345678"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="service"> Service Needed </label>
+
+            <input
+              type="text"
+              id="service"
+              name="service"
+              value="{{ artisan['service'] }}"
+              readonly
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="location"> Your Location </label>
+
+            <input
+              type="text"
+              id="location"
+              name="location"
+              placeholder="e.g. Yaba"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="description"> Describe the Problem </label>
+
+            <textarea
+              id="description"
+              name="description"
+              placeholder="Tell the artisan what you need help with..."
+              rows="6"
+              required
+            ></textarea>
+          </div>
+
+          <button type="submit" class="register-button">
+            Send Service Request
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+    </footer>
+  </body>
+</html>

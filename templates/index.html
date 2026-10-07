@@ -1,0 +1,148 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Find Trusted Artisans</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- Navigation -->
+
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <div class="nav-links">
+        <a href="/"> Home </a>
+
+        <a href="#"> How It Works </a>
+
+        <a href="#"> For Artisans </a>
+      </div>
+
+      <a href="/register" class="nav-button"> Join as an Artisan </a>
+    </nav>
+
+    <!-- Hero Section -->
+
+    <section class="hero">
+      <div class="hero-content">
+        <div class="badge">✓ Trusted local artisans</div>
+
+        <h1>
+          Find the right
+
+          <span> artisan </span>
+
+          for the job.
+        </h1>
+
+        <p>
+          Connect with skilled artisans near you for reliable home and business
+          services.
+        </p>
+
+        <!-- Search Box -->
+
+        <form class="search-box" method="GET" action="/search">
+          <div class="input-group">
+            <label> What do you need? </label>
+
+            <select name="service">
+              <option value="Electrician">Electrician</option>
+
+              <option value="Plumber">Plumber</option>
+
+              <option value="Carpenter">Carpenter</option>
+
+              <option value="Painter">Painter</option>
+
+              <option value="Mechanic">Mechanic</option>
+
+              <option value="AC Technician">AC Technician</option>
+
+              <option value="Cleaner">Cleaner</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label> Where? </label>
+
+            <input
+              type="text"
+              name="location"
+              placeholder="e.g. Yaba"
+              required
+            />
+          </div>
+
+          <button type="submit" class="search-button">Find Artisan</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Services -->
+
+    <section class="services">
+      <div class="section-heading">
+        <p class="small-heading">SERVICES</p>
+
+        <h2>What do you need help with?</h2>
+
+        <p>Find skilled artisans for everyday repairs and services.</p>
+      </div>
+
+      <div class="service-grid">
+        <div class="service-card">
+          <div class="service-icon">⚡</div>
+
+          <h3>Electrician</h3>
+
+          <p>Electrical repairs and installations.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🔧</div>
+
+          <h3>Plumber</h3>
+
+          <p>Plumbing repairs and installations.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🔨</div>
+
+          <h3>Carpenter</h3>
+
+          <p>Furniture and woodwork services.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">❄️</div>
+
+          <h3>AC Technician</h3>
+
+          <p>Air conditioning installation and repair.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+
+      <p class="copyright">© 2026 Conexa</p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Admin Dashboard</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- NAVBAR -->
+
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <a href="/"> View Website </a>
+    </nav>
+
+    <!-- BACK BUTTON -->
+
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon"> ← </span>
+
+        <span> Back </span>
+      </button>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+
+    <section class="admin-section">
+      <div class="admin-container">
+        <div class="admin-header">
+          <p class="small-heading">CONEXA ADMIN</p>
+
+          <h1>Admin Dashboard</h1>
+
+          <p>
+            Manage verification requests, artisans, and customer service
+            requests.
+          </p>
+        </div>
+
+        <!-- ADMIN NAVIGATION -->
+
+        <div class="admin-actions">
+          <a href="/admin/artisans" class="approve-button"> Manage Artisans </a>
+
+          <a href="/admin/requests" class="approve-button">
+            Service Requests
+          </a>
+        </div>
+
+        <!-- VERIFICATION SECTION -->
+
+        <div class="admin-header">
+          <h2>Verification Requests</h2>
+
+          <p>Review artisans requesting verification.</p>
+        </div>
+
+        {% if requests %}
+
+        <div class="admin-request-list">
+          {% for verification in requests %}
+
+          <div class="admin-request-card">
+            <!-- HEADER -->
+
+            <div class="admin-request-header">
+              <div>
+                <h2>{{ verification["full_name"] }}</h2>
+
+                <span class="admin-status"> {{ verification["status"] }} </span>
+              </div>
+            </div>
+
+            <!-- DETAILS -->
+
+            <div class="admin-request-details">
+              <p>
+                <strong> Service: </strong>
+
+                {{ verification["service"] }}
+              </p>
+
+              <p>
+                <strong> Location: </strong>
+
+                {{ verification["location"] }}
+              </p>
+
+              <p>
+                <strong> Phone: </strong>
+
+                {{ verification["phone"] }}
+              </p>
+
+              <p>
+                <strong> Experience: </strong>
+
+                {{ verification["years_experience"] }} years
+              </p>
+            </div>
+
+            <!-- VERIFICATION INFORMATION -->
+
+            <div class="admin-note">
+              <strong> Verification Information </strong>
+
+              <p>{{ verification["verification_note"] }}</p>
+            </div>
+
+            <!-- ACTIONS -->
+
+            {% if verification["status"] == "Pending" %}
+
+            <div class="admin-actions">
+              <form
+                action="/admin/verification/{{ verification['id'] }}/approve"
+                method="POST"
+              >
+                <button type="submit" class="approve-button">✓ Approve</button>
+              </form>
+
+              <form
+                action="/admin/verification/{{ verification['id'] }}/reject"
+                method="POST"
+              >
+                <button type="submit" class="reject-button">✕ Reject</button>
+              </form>
+            </div>
+
+            {% endif %}
+          </div>
+
+          {% endfor %}
+        </div>
+
+        {% else %}
+
+        <div class="admin-empty">
+          <h2>No Verification Requests</h2>
+
+          <p>New artisan verification requests will appear here.</p>
+        </div>
+
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+
+      <p class="copyright">© 2026 Conexa</p>
+    </footer>
+  </body>
+</html>

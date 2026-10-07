@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Manage Artisans</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon">←</span>
+
+        <span>Back</span>
+      </button>
+    </div>
+
+    <section class="admin-section">
+      <div class="admin-container">
+        <div class="admin-header">
+          <h1>Manage Artisans</h1>
+
+          <p>View and manage artisans registered on Conexa.</p>
+        </div>
+
+        {% if artisans %}
+
+        <div class="admin-request-list">
+          {% for artisan in artisans %}
+
+          <div class="admin-request-card">
+            <div class="admin-request-top">
+              <div>
+                <h2>{{ artisan["name"] }}</h2>
+
+                <p class="admin-request-customer">{{ artisan["service"] }}</p>
+              </div>
+
+              <div class="admin-status">
+                {% if artisan["verified"] == 1 %}
+
+                <span class="status-completed"> ✓ Verified </span>
+
+                {% else %}
+
+                <span class="status-pending"> Unverified </span>
+
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="admin-request-details">
+              <p>
+                <strong>Location:</strong>
+                {{ artisan["location"] }}
+              </p>
+
+              <p>
+                <strong>Phone:</strong>
+                {{ artisan["phone"] }}
+              </p>
+
+              <p>
+                <strong>Experience:</strong>
+                {{ artisan["experience"] }} years
+              </p>
+
+              <p>
+                <strong>Rating:</strong>
+                {{ artisan["rating"] }}/5
+              </p>
+            </div>
+
+            <div class="admin-actions">
+              <a
+                href="{{ url_for(
+                                        'artisan_profile',
+                                        artisan_id=artisan['id']
+                                    ) }}"
+                class="approve-button"
+              >
+                View Profile
+              </a>
+            </div>
+          </div>
+
+          {% endfor %}
+        </div>
+
+        {% else %}
+
+        <div class="admin-empty">
+          <h2>No Artisans Yet</h2>
+
+          <p>Registered artisans will appear here.</p>
+        </div>
+
+        {% endif %}
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2026 Conexa. Connecting you with skilled artisans.</p>
+    </footer>
+  </body>
+</html>

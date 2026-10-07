@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Artisan Profile</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <a href="/"> Back Home </a>
+    </nav>
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon">←</span>
+        <span>Back</span>
+      </button>
+    </div>
+
+    <section class="profile-section">
+      <div class="profile-container">
+        <!-- ARTISAN PROFILE -->
+
+        <div class="profile-card">
+          <div class="profile-title">
+            <div>
+              <h1>{{ artisan["name"] }}</h1>
+
+              <p class="profile-service">{{ artisan["service"] }}</p>
+            </div>
+
+            {% if artisan["verified"] == 1 %}
+
+            <span class="verified-badge"> ✓ Verified Artisan </span>
+
+            {% endif %}
+          </div>
+
+          <div class="profile-details">
+            <div class="profile-detail">📍 {{ artisan["location"] }}</div>
+
+            <div class="profile-detail">
+              🛠️ {{ artisan["experience"] }} years experience
+            </div>
+
+            <div class="profile-detail">
+              {% if review_count > 0 %}
+
+              <span class="rating-display">
+                <span class="rating-star-display"> ★ </span>
+
+                {{ "%.1f"|format(artisan["rating"]) }}
+              </span>
+
+              <span class="review-count">
+                · {{ review_count }} {% if review_count == 1 %} review {% else
+                %} reviews {% endif %}
+              </span>
+
+              {% else %}
+
+              <span class="no-rating"> No ratings yet </span>
+
+              {% endif %}
+            </div>
+          </div>
+
+          <a href="tel:{{ artisan['phone'] }}" class="profile-contact">
+            Contact Artisan
+          </a>
+
+          <a href="/request/{{ artisan['id'] }}" class="profile-request">
+            Request Service
+          </a>
+          {% if artisan["verified"] == 0 %}
+
+          <a href="/verify/{{ artisan['id'] }}" class="profile-verify">
+            ✓ Request Verification
+          </a>
+
+          {% endif %}
+
+          <br />
+
+          <a href="/" class="profile-back"> ← Back to Home </a>
+        </div>
+
+        <!-- LEAVE REVIEW -->
+
+        <div class="profile-card review-card">
+          <p class="small-heading">SHARE YOUR EXPERIENCE</p>
+
+          <h2>Leave a Review</h2>
+
+          <p class="register-description">
+            Tell other customers about your experience with this artisan.
+          </p>
+
+          <form
+            action="/review/{{ artisan['id'] }}"
+            method="POST"
+            class="register-form"
+          >
+            <div class="form-group">
+              <label for="customer_name"> Your Name </label>
+
+              <input
+                type="text"
+                id="customer_name"
+                name="customer_name"
+                placeholder="Enter your name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label> How would you rate this artisan? </label>
+
+              <div
+                class="star-rating"
+                role="radiogroup"
+                aria-label="Artisan rating"
+              >
+                <button
+                  type="button"
+                  class="rating-star"
+                  data-rating="1"
+                  aria-label="1 star"
+                >
+                  ★
+                </button>
+
+                <button
+                  type="button"
+                  class="rating-star"
+                  data-rating="2"
+                  aria-label="2 stars"
+                >
+                  ★
+                </button>
+
+                <button
+                  type="button"
+                  class="rating-star"
+                  data-rating="3"
+                  aria-label="3 stars"
+                >
+                  ★
+                </button>
+
+                <button
+                  type="button"
+                  class="rating-star"
+                  data-rating="4"
+                  aria-label="4 stars"
+                >
+                  ★
+                </button>
+
+                <button
+                  type="button"
+                  class="rating-star"
+                  data-rating="5"
+                  aria-label="5 stars"
+                >
+                  ★
+                </button>
+              </div>
+
+              <p class="rating-text" id="rating-text">Select a rating</p>
+
+              <input type="hidden" name="rating" id="rating" required />
+            </div>
+
+            <div class="form-group">
+              <label for="comment"> Your Review </label>
+
+              <textarea
+                id="comment"
+                name="comment"
+                placeholder="Tell us about your experience..."
+                rows="5"
+                required
+              ></textarea>
+            </div>
+
+            <button type="submit" class="register-button">Submit Review</button>
+          </form>
+        </div>
+
+        <!-- CUSTOMER REVIEWS -->
+
+        <div class="profile-card">
+          <p class="small-heading">CUSTOMER REVIEWS</p>
+
+          <h2>What customers are saying</h2>
+
+          {% if reviews %}
+
+          <div class="reviews-list">
+            {% for review in reviews %}
+
+            <div class="review-item">
+              <div class="review-header">
+                <h3>{{ review["customer_name"] }}</h3>
+
+                <div class="review-stars">
+                  {% for i in range(1, 6) %} {% if i <= review["rating"] %}
+
+                  <span class="filled-star"> ★ </span>
+
+                  {% else %}
+
+                  <span class="empty-star"> ★ </span>
+
+                  {% endif %} {% endfor %}
+                </div>
+              </div>
+
+              <p class="review-comment">"{{ review["comment"] }}"</p>
+            </div>
+
+            {% endfor %}
+          </div>
+
+          {% else %}
+
+          <p class="no-reviews">
+            No reviews yet. Be the first to review this artisan!
+          </p>
+
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+    </footer>
+
+    <!-- STAR RATING JAVASCRIPT -->
+
+    <script>
+      const stars = document.querySelectorAll(".rating-star");
+
+      const ratingInput = document.getElementById("rating");
+
+      const ratingText = document.getElementById("rating-text");
+
+      const ratingLabels = {
+        1: "Poor",
+
+        2: "Fair",
+
+        3: "Good",
+
+        4: "Very Good",
+
+        5: "Excellent",
+      };
+
+      stars.forEach((star) => {
+        star.addEventListener("mouseenter", () => {
+          const rating = Number(star.dataset.rating);
+
+          highlightStars(rating);
+        });
+
+        star.addEventListener("click", () => {
+          const rating = Number(star.dataset.rating);
+
+          ratingInput.value = rating;
+
+          highlightStars(rating);
+
+          ratingText.textContent = `${rating} star${rating > 1 ? "s" : ""} — ${ratingLabels[rating]}`;
+        });
+      });
+
+      document
+        .querySelector(".star-rating")
+        .addEventListener("mouseleave", () => {
+          const selectedRating = Number(ratingInput.value);
+
+          highlightStars(selectedRating);
+        });
+
+      function highlightStars(rating) {
+        stars.forEach((star) => {
+          const starRating = Number(star.dataset.rating);
+
+          if (starRating <= rating) {
+            star.classList.add("selected");
+          } else {
+            star.classList.remove("selected");
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

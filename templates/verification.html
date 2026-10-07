@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Request Verification</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- NAVBAR -->
+
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <a href="/"> Back Home </a>
+    </nav>
+
+    <!-- BACK BUTTON -->
+
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon"> ← </span>
+
+        <span> Back </span>
+      </button>
+    </div>
+
+    <!-- VERIFICATION SECTION -->
+
+    <section class="register-section">
+      <div class="register-container">
+        <div class="register-card">
+          <p class="small-heading">ARTISAN VERIFICATION</p>
+
+          <h1>Get Verified on Conexa</h1>
+
+          <p class="register-description">
+            A verified badge helps customers know that your profile has been
+            reviewed by Conexa.
+          </p>
+
+          <!-- ARTISAN INFORMATION -->
+
+          <div class="verification-info">
+            <div class="verification-item">
+              <span> Name </span>
+
+              <strong> {{ artisan["name"] }} </strong>
+            </div>
+
+            <div class="verification-item">
+              <span> Service </span>
+
+              <strong> {{ artisan["service"] }} </strong>
+            </div>
+
+            <div class="verification-item">
+              <span> Location </span>
+
+              <strong> {{ artisan["location"] }} </strong>
+            </div>
+
+            <div class="verification-item">
+              <span> Experience </span>
+
+              <strong> {{ artisan["experience"] }} years </strong>
+            </div>
+          </div>
+
+          <!-- VERIFICATION FORM -->
+
+          <form
+            action="/verify/{{ artisan['id'] }}"
+            method="POST"
+            class="register-form"
+          >
+            <div class="form-group">
+              <label for="full_name"> Full Name </label>
+
+              <input
+                type="text"
+                id="full_name"
+                name="full_name"
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="phone"> Phone Number </label>
+
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                placeholder="Enter your phone number"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="verification_note">
+                Tell us about your experience
+              </label>
+
+              <textarea
+                id="verification_note"
+                name="verification_note"
+                rows="6"
+                placeholder="Tell Conexa about your work experience, qualifications, previous projects, or anything that can help us verify your profile."
+                required
+              ></textarea>
+            </div>
+
+            <div class="verification-notice">
+              <strong> What happens next? </strong>
+
+              <p>
+                Your request will be reviewed by the Conexa team. Your profile
+                will receive the verified badge only if your request is
+                approved.
+              </p>
+            </div>
+
+            <button type="submit" class="register-button">
+              Submit Verification Request
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+
+      <p class="copyright">© 2026 Conexa</p>
+    </footer>
+  </body>
+</html>

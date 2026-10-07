@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Service Requests</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon">←</span>
+        <span>Back</span>
+      </button>
+    </div>
+
+    <section class="admin-section">
+      <div class="admin-container">
+        <div class="admin-header">
+          <h1>Service Requests</h1>
+
+          <p>View and manage service requests submitted by customers.</p>
+        </div>
+
+        {% if requests %}
+
+        <div class="admin-request-list">
+          {% for service_request in requests %}
+
+          <div class="admin-request-card">
+            <div class="admin-request-top">
+              <div>
+                <h2>{{ service_request["service"] }}</h2>
+
+                <p class="admin-request-customer">
+                  Customer: {{ service_request["customer_name"] }}
+                </p>
+              </div>
+
+              <div class="admin-status">
+                {% if service_request["status"] == "Pending" %}
+
+                <span class="status-pending"> Pending </span>
+
+                {% elif service_request["status"] == "In Progress" %}
+
+                <span class="status-progress"> In Progress </span>
+
+                {% else %}
+
+                <span class="status-completed"> Completed </span>
+
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="admin-request-details">
+              <p>
+                <strong>Phone:</strong>
+                {{ service_request["phone"] }}
+              </p>
+
+              <p>
+                <strong>Location:</strong>
+                {{ service_request["location"] }}
+              </p>
+
+              <p>
+                <strong>Service:</strong>
+                {{ service_request["service"] }}
+              </p>
+
+              {% if service_request["artisan_name"] %}
+
+              <p>
+                <strong>Artisan:</strong>
+                {{ service_request["artisan_name"] }}
+              </p>
+
+              {% else %}
+
+              <p>
+                <strong>Artisan:</strong>
+                Not assigned
+              </p>
+
+              {% endif %}
+
+              <div class="admin-note">
+                <strong>Description:</strong>
+
+                <p>{{ service_request["description"] }}</p>
+              </div>
+            </div>
+
+            <div class="admin-actions">
+              {% if service_request["status"] == "Pending" %}
+
+              <form
+                method="POST"
+                action="{{ url_for(
+                                            'update_request_status',
+                                            request_id=service_request['id']
+                                        ) }}"
+              >
+                <input type="hidden" name="status" value="In Progress" />
+
+                <button type="submit" class="approve-button">
+                  Mark In Progress
+                </button>
+              </form>
+
+              {% elif service_request["status"] == "In Progress" %}
+
+              <form
+                method="POST"
+                action="{{ url_for(
+                                            'update_request_status',
+                                            request_id=service_request['id']
+                                        ) }}"
+              >
+                <input type="hidden" name="status" value="Completed" />
+
+                <button type="submit" class="approve-button">
+                  Mark Completed
+                </button>
+              </form>
+
+              {% else %}
+
+              <span class="request-completed"> ✓ Service Completed </span>
+
+              {% endif %}
+            </div>
+          </div>
+
+          {% endfor %}
+        </div>
+
+        {% else %}
+
+        <div class="admin-empty">
+          <h2>No Service Requests Yet</h2>
+
+          <p>Customer service requests will appear here.</p>
+        </div>
+
+        {% endif %}
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2026 Conexa. Connecting you with skilled artisans.</p>
+    </footer>
+  </body>
+</html>

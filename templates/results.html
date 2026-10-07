@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Search Results</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <a href="/"> Back Home </a>
+    </nav>
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon">←</span>
+        <span>Back</span>
+      </button>
+    </div>
+
+    <section class="results-section">
+      <div class="results-container">
+        <h1>Available Artisans</h1>
+
+        <p class="results-description">
+          {{ service }} artisans in {{ location }}
+        </p>
+
+        <div class="artisan-list">
+          {% if artisans %} {% for artisan in artisans %}
+
+          <div class="artisan-card">
+            <div class="artisan-info">
+              <div class="artisan-name-row">
+                <h2>
+                  <a href="/artisan/{{ artisan['id'] }}">
+                    {{ artisan["name"] }}
+                  </a>
+                </h2>
+
+                {% if artisan["verified"] == 1 %}
+
+                <span class="verified-badge small"> ✓ Verified </span>
+
+                {% endif %}
+              </div>
+
+              <p>{{ artisan["service"] }}</p>
+
+              <p>📍 {{ artisan["location"] }}</p>
+
+              <p>🛠️ {{ artisan["experience"] }} years experience</p>
+
+              {% if artisan["review_count"] > 0 %}
+
+              <p class="search-rating">
+                <span>★</span>
+
+                {{ "%.1f"|format(artisan["rating"]) }} · {{
+                artisan["review_count"] }} {% if artisan["review_count"] == 1 %}
+                review {% else %} reviews {% endif %}
+              </p>
+
+              {% else %}
+
+              <p class="search-rating no-rating">No ratings yet</p>
+
+              {% endif %}
+            </div>
+
+            <a href="tel:{{ artisan['phone'] }}" class="contact-button">
+              Contact
+            </a>
+          </div>
+
+          {% endfor %} {% else %}
+
+          <div class="no-results">
+            <h2>No artisans found</h2>
+
+            <p>Try searching for another service or location.</p>
+
+            <a href="/"> Search Again </a>
+          </div>
+
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+    </footer>
+  </body>
+</html>

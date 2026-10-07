@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Request Sent</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <a href="/"> Back Home </a>
+    </nav>
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon">←</span>
+        <span>Back</span>
+      </button>
+    </div>
+
+    <section class="success-section">
+      <div class="success-container">
+        <div class="success-icon">✓</div>
+
+        <p class="small-heading">REQUEST SENT</p>
+
+        <h1>Your service request has been sent!</h1>
+
+        <p>
+          Your request has been recorded successfully. The artisan can now
+          receive your service request and contact you using the information you
+          provided.
+        </p>
+
+        <a href="/" class="success-button"> Back to Home </a>
+      </div>
+    </section>
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+    </footer>
+  </body>
+</html>

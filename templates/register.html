@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Join as an Artisan</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <a href="/" class="back-home"> Back Home </a>
+    </nav>
+
+    <div class="page-back">
+      <a href="/" class="back-arrow" aria-label="Go back">
+        <span class="arrow-icon">←</span>
+
+        <span>Back</span>
+      </a>
+    </div>
+
+    <!-- REGISTRATION SECTION -->
+
+    <section class="register-section">
+      <div class="register-container">
+        <p class="small-heading">JOIN CONEXA</p>
+
+        <h1>Create your artisan profile</h1>
+
+        <p class="register-description">
+          Tell customers about your services so they can find and contact you.
+        </p>
+
+        <!-- REGISTRATION FORM -->
+
+        <form action="/register" method="POST" class="register-form">
+          <div class="form-group">
+            <label> Full Name / Business Name </label>
+
+            <input
+              type="text"
+              name="name"
+              placeholder="e.g. Adewale Electrical Services"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label> Service </label>
+
+            <select name="service" required>
+              <option value="">Select your service</option>
+
+              <option value="Electrician">Electrician</option>
+
+              <option value="Plumber">Plumber</option>
+
+              <option value="Carpenter">Carpenter</option>
+
+              <option value="Painter">Painter</option>
+
+              <option value="Mechanic">Mechanic</option>
+
+              <option value="AC Technician">AC Technician</option>
+
+              <option value="Cleaner">Cleaner</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label> Location </label>
+
+            <input
+              type="text"
+              name="location"
+              placeholder="e.g. Yaba"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label> Phone Number </label>
+
+            <input
+              type="tel"
+              name="phone"
+              placeholder="e.g. 08012345678"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label> Years of Experience </label>
+
+            <input
+              type="number"
+              name="experience"
+              min="0"
+              placeholder="e.g. 5"
+              required
+            />
+          </div>
+
+          <button type="submit" class="register-button">
+            Create Artisan Profile
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+    </footer>
+  </body>
+</html>
