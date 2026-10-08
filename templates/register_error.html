@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Conexa | Account Notice</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="logo">Con<span>exa</span></div>
+
+      <a href="/"> Home </a>
+    </nav>
+
+    <div class="page-back">
+      <button onclick="history.back()" class="back-arrow">
+        <span class="arrow-icon"> ← </span>
+
+        <span> Back </span>
+      </button>
+    </div>
+
+    <section class="account-result-section">
+      <div class="account-result-card">
+        <div class="account-result-icon">!</div>
+
+        <p class="small-heading">CONEXA ACCOUNT</p>
+
+        <h1>{{ error_title }}</h1>
+
+        <p class="account-result-message">{{ error_message }}</p>
+
+        <div class="account-result-actions">
+          <a href="/register" class="primary-button"> Try Again </a>
+
+          <a href="/" class="secondary-button"> Return Home </a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="logo">Con<span>exa</span></div>
+
+      <p>Connecting you with skilled artisans.</p>
+
+      <p class="copyright">© 2026 Conexa</p>
+    </footer>
+  </body>
+</html>

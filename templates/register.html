@@ -1,4 +1,5 @@
 <!doctype html>
+
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -14,95 +15,188 @@
   </head>
 
   <body>
+    <!-- NAVBAR -->
     <nav class="navbar">
       <div class="logo">Con<span>exa</span></div>
 
-      <a href="/" class="back-home"> Back Home </a>
+      <a href="/">Home</a>
     </nav>
 
+    <!-- BACK BUTTON -->
     <div class="page-back">
-      <a href="/" class="back-arrow" aria-label="Go back">
+      <button onclick="history.back()" class="back-arrow">
         <span class="arrow-icon">←</span>
-
         <span>Back</span>
-      </a>
+      </button>
     </div>
 
-    <!-- REGISTRATION SECTION -->
+    <!-- REGISTRATION FORM -->
+    <section class="form-section">
+      <div class="form-container">
+        <div class="form-header">
+          <p class="small-heading">JOIN CONEXA</p>
 
-    <section class="register-section">
-      <div class="register-container">
-        <p class="small-heading">JOIN CONEXA</p>
+          <h1>Create Your Artisan Account</h1>
 
-        <h1>Create your artisan profile</h1>
+          <p>
+            Join Conexa and connect your skills with customers looking for
+            trusted artisans.
+          </p>
+        </div>
 
-        <p class="register-description">
-          Tell customers about your services so they can find and contact you.
-        </p>
+        <form method="POST" action="{{ url_for('register') }}">
+          <!-- PERSONAL INFORMATION -->
+          <div class="form-divider">Personal Information</div>
 
-        <!-- REGISTRATION FORM -->
-
-        <form action="/register" method="POST" class="register-form">
           <div class="form-group">
-            <label> Full Name / Business Name </label>
+            <label for="name">Full Name</label>
 
             <input
               type="text"
+              id="name"
               name="name"
-              placeholder="e.g. Adewale Electrical Services"
+              placeholder="Enter your full name"
               required
             />
           </div>
 
           <div class="form-group">
-            <label> Service </label>
+            <label for="phone">Phone Number</label>
 
-            <select name="service" required>
-              <option value="">Select your service</option>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              placeholder="Enter your phone number"
+              required
+            />
 
-              <option value="Electrician">Electrician</option>
-
-              <option value="Plumber">Plumber</option>
-
-              <option value="Carpenter">Carpenter</option>
-
-              <option value="Painter">Painter</option>
-
-              <option value="Mechanic">Mechanic</option>
-
-              <option value="AC Technician">AC Technician</option>
-
-              <option value="Cleaner">Cleaner</option>
-            </select>
+            <small>
+              Your phone number will be used to sign in to your artisan account.
+            </small>
           </div>
 
           <div class="form-group">
-            <label> Location </label>
+            <label for="email">
+              Email Address
+              <span class="optional">Optional</span>
+            </label>
+
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Enter your email address"
+            />
+          </div>
+
+          <!-- PASSWORD -->
+          <div class="form-group">
+            <label for="password">Password</label>
+
+            <div class="password-input-wrapper">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                minlength="6"
+                placeholder="Create a password"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                onclick="togglePassword()"
+                aria-label="Show password"
+              >
+                👁
+              </button>
+            </div>
+
+            <small> Password must be at least 6 characters. </small>
+          </div>
+
+          <!-- LOCATION -->
+          <div class="form-divider">Location</div>
+
+          <!-- COUNTRY -->
+          <div class="form-group">
+            <label for="country">Country</label>
+
+            <select id="country" name="country" required>
+              <option value="">Select your country</option>
+              <option value="Nigeria">Nigeria</option>
+              <option value="Ghana">Ghana</option>
+              <option value="Kenya">Kenya</option>
+              <option value="South Africa">South Africa</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="United States">United States</option>
+              <option value="Canada">Canada</option>
+            </select>
+          </div>
+
+          <!-- STATE / REGION -->
+          <div class="form-group">
+            <label for="state_region">State / Region</label>
+
+            <select id="state_region" name="state_region" required disabled>
+              <option value="">Select your country first</option>
+            </select>
+          </div>
+
+          <!-- CITY / AREA -->
+          <div class="form-group">
+            <label for="city_area">City / Area</label>
 
             <input
               type="text"
-              name="location"
+              id="city_area"
+              name="city_area"
               placeholder="e.g. Yaba"
               required
             />
           </div>
 
+          <!-- LOCAL AREA -->
           <div class="form-group">
-            <label> Phone Number </label>
+            <label for="location">Local Area Description</label>
 
             <input
-              type="tel"
-              name="phone"
-              placeholder="e.g. 08012345678"
+              type="text"
+              id="location"
+              name="location"
+              placeholder="e.g. Near Yaba Market"
+              required
+            />
+
+            <small>
+              Add a more specific description that helps customers identify your
+              service area.
+            </small>
+          </div>
+
+          <!-- PROFESSIONAL INFORMATION -->
+          <div class="form-divider">Professional Information</div>
+
+          <div class="form-group">
+            <label for="service">Service</label>
+
+            <input
+              type="text"
+              id="service"
+              name="service"
+              placeholder="e.g. Electrician"
               required
             />
           </div>
 
           <div class="form-group">
-            <label> Years of Experience </label>
+            <label for="experience">Years of Experience</label>
 
             <input
               type="number"
+              id="experience"
               name="experience"
               min="0"
               placeholder="e.g. 5"
@@ -110,19 +204,213 @@
             />
           </div>
 
-          <button type="submit" class="register-button">
-            Create Artisan Profile
+          <!-- SUBMIT -->
+          <button type="submit" class="primary-button">
+            Create Artisan Account
           </button>
+
+          <p class="form-note">
+            By creating an account, you agree to provide accurate information
+            about your services.
+          </p>
         </form>
       </div>
     </section>
 
     <!-- FOOTER -->
-
     <footer>
       <div class="logo">Con<span>exa</span></div>
 
       <p>Connecting you with skilled artisans.</p>
+
+      <p class="copyright">© 2026 Conexa</p>
     </footer>
+
+    <!-- PASSWORD TOGGLE + LOCATION -->
+    <script>
+      /* =========================
+     PASSWORD TOGGLE
+  ========================= */
+
+      function togglePassword() {
+        const passwordInput = document.getElementById("password");
+
+        const toggleButton = document.querySelector(".password-toggle");
+
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+
+          toggleButton.textContent = "🙈";
+
+          toggleButton.setAttribute("aria-label", "Hide password");
+        } else {
+          passwordInput.type = "password";
+
+          toggleButton.textContent = "👁";
+
+          toggleButton.setAttribute("aria-label", "Show password");
+        }
+      }
+
+      /* =========================
+     COUNTRY / REGION DATA
+  ========================= */
+
+      const regions = {
+        Nigeria: [
+          "Abia",
+          "Adamawa",
+          "Akwa Ibom",
+          "Anambra",
+          "Bauchi",
+          "Bayelsa",
+          "Benue",
+          "Borno",
+          "Cross River",
+          "Delta",
+          "Ebonyi",
+          "Edo",
+          "Ekiti",
+          "Enugu",
+          "Gombe",
+          "Imo",
+          "Jigawa",
+          "Kaduna",
+          "Kano",
+          "Katsina",
+          "Kebbi",
+          "Kogi",
+          "Kwara",
+          "Lagos",
+          "Nasarawa",
+          "Niger",
+          "Ogun",
+          "Ondo",
+          "Osun",
+          "Oyo",
+          "Plateau",
+          "Rivers",
+          "Sokoto",
+          "Taraba",
+          "Yobe",
+          "Zamfara",
+          "Federal Capital Territory",
+        ],
+
+        Ghana: [
+          "Greater Accra",
+          "Ashanti",
+          "Brong-Ahafo",
+          "Central",
+          "Eastern",
+          "Northern",
+          "Upper East",
+          "Upper West",
+          "Volta",
+          "Western",
+        ],
+
+        Kenya: [
+          "Nairobi",
+          "Mombasa",
+          "Kisumu",
+          "Nakuru",
+          "Kiambu",
+          "Machakos",
+          "Kajiado",
+          "Uasin Gishu",
+          "Meru",
+          "Nyeri",
+        ],
+
+        "South Africa": [
+          "Eastern Cape",
+          "Free State",
+          "Gauteng",
+          "KwaZulu-Natal",
+          "Limpopo",
+          "Mpumalanga",
+          "Northern Cape",
+          "North West",
+          "Western Cape",
+        ],
+
+        "United Kingdom": ["England", "Scotland", "Wales", "Northern Ireland"],
+
+        "United States": [
+          "Alabama",
+          "Alaska",
+          "Arizona",
+          "Arkansas",
+          "California",
+          "Colorado",
+          "Connecticut",
+          "Florida",
+          "Georgia",
+          "Illinois",
+          "Maryland",
+          "Massachusetts",
+          "Michigan",
+          "Minnesota",
+          "New Jersey",
+          "New York",
+          "North Carolina",
+          "Ohio",
+          "Oregon",
+          "Pennsylvania",
+          "Tennessee",
+          "Texas",
+          "Virginia",
+          "Washington",
+        ],
+
+        Canada: [
+          "Alberta",
+          "British Columbia",
+          "Manitoba",
+          "New Brunswick",
+          "Newfoundland and Labrador",
+          "Nova Scotia",
+          "Ontario",
+          "Prince Edward Island",
+          "Quebec",
+          "Saskatchewan",
+        ],
+      };
+
+      /* =========================
+     UPDATE STATE / REGION
+  ========================= */
+
+      const countrySelect = document.getElementById("country");
+
+      const regionSelect = document.getElementById("state_region");
+
+      countrySelect.addEventListener("change", function () {
+        const selectedCountry = this.value;
+
+        regionSelect.innerHTML =
+          '<option value="">Select your state / region</option>';
+
+        if (selectedCountry && regions[selectedCountry]) {
+          regionSelect.disabled = false;
+
+          regions[selectedCountry].forEach(function (region) {
+            const option = document.createElement("option");
+
+            option.value = region;
+
+            option.textContent = region;
+
+            regionSelect.appendChild(option);
+          });
+        } else {
+          regionSelect.disabled = true;
+
+          regionSelect.innerHTML =
+            '<option value="">Select your country first</option>';
+        }
+      });
+    </script>
   </body>
 </html>

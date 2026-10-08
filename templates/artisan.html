@@ -1,4 +1,5 @@
 <!doctype html>
+
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -14,11 +15,16 @@
   </head>
 
   <body>
+    <!-- NAVBAR -->
+
     <nav class="navbar">
       <div class="logo">Con<span>exa</span></div>
 
       <a href="/"> Back Home </a>
     </nav>
+
+    <!-- BACK BUTTON -->
+
     <div class="page-back">
       <button onclick="history.back()" class="back-arrow">
         <span class="arrow-icon">←</span>
@@ -28,7 +34,9 @@
 
     <section class="profile-section">
       <div class="profile-container">
-        <!-- ARTISAN PROFILE -->
+        <!-- =====================================================
+                 ARTISAN PROFILE
+                 ===================================================== -->
 
         <div class="profile-card">
           <div class="profile-title">
@@ -44,6 +52,8 @@
 
             {% endif %}
           </div>
+
+          <!-- PROFILE DETAILS -->
 
           <div class="profile-details">
             <div class="profile-detail">📍 {{ artisan["location"] }}</div>
@@ -74,6 +84,14 @@
             </div>
           </div>
 
+          <!-- =================================================
+                     CUSTOMER ACTIONS
+                     These only appear when someone else views
+                     the artisan's profile.
+                     ================================================= -->
+
+          {% if not is_owner %}
+
           <a href="tel:{{ artisan['phone'] }}" class="profile-contact">
             Contact Artisan
           </a>
@@ -81,7 +99,32 @@
           <a href="/request/{{ artisan['id'] }}" class="profile-request">
             Request Service
           </a>
-          {% if artisan["verified"] == 0 %}
+
+          {% endif %}
+
+          <!-- =================================================
+                     ARTISAN OWNER ACTIONS
+                     These only appear on the artisan's own profile.
+                     ================================================= -->
+
+          {% if is_owner %}
+
+          <a href="{{ url_for('edit_profile') }}" class="profile-request">
+            Edit Profile
+          </a>
+
+          <a href="{{ url_for('artisan_dashboard') }}" class="profile-contact">
+            Go to Dashboard
+          </a>
+
+          {% endif %}
+
+          <!-- =================================================
+                     VERIFICATION
+                     Only the logged-in artisan can request verification.
+                     ================================================= -->
+
+          {% if is_owner and artisan["verified"] == 0 %}
 
           <a href="/verify/{{ artisan['id'] }}" class="profile-verify">
             ✓ Request Verification
@@ -94,7 +137,13 @@
           <a href="/" class="profile-back"> ← Back to Home </a>
         </div>
 
-        <!-- LEAVE REVIEW -->
+        <!-- =====================================================
+                 LEAVE REVIEW
+                 Customers can see this.
+                 The artisan cannot see this on their own profile.
+                 ===================================================== -->
+
+        {% if not is_owner %}
 
         <div class="profile-card review-card">
           <p class="small-heading">SHARE YOUR EXPERIENCE</p>
@@ -110,6 +159,8 @@
             method="POST"
             class="register-form"
           >
+            <!-- CUSTOMER NAME -->
+
             <div class="form-group">
               <label for="customer_name"> Your Name </label>
 
@@ -121,6 +172,8 @@
                 required
               />
             </div>
+
+            <!-- STAR RATING -->
 
             <div class="form-group">
               <label> How would you rate this artisan? </label>
@@ -181,6 +234,8 @@
               <input type="hidden" name="rating" id="rating" required />
             </div>
 
+            <!-- REVIEW COMMENT -->
+
             <div class="form-group">
               <label for="comment"> Your Review </label>
 
@@ -197,7 +252,11 @@
           </form>
         </div>
 
-        <!-- CUSTOMER REVIEWS -->
+        {% endif %}
+
+        <!-- =====================================================
+                 CUSTOMER REVIEWS
+                 ===================================================== -->
 
         <div class="profile-card">
           <p class="small-heading">CUSTOMER REVIEWS</p>
@@ -211,7 +270,7 @@
 
             <div class="review-item">
               <div class="review-header">
-                <h3>{{ review["customer_name"] }}</h3>
+                <h3>{{ review["reviewer_name"] }}</h3>
 
                 <div class="review-stars">
                   {% for i in range(1, 6) %} {% if i <= review["rating"] %}
@@ -243,13 +302,21 @@
       </div>
     </section>
 
+    <!-- FOOTER -->
+
     <footer>
       <div class="logo">Con<span>exa</span></div>
 
       <p>Connecting you with skilled artisans.</p>
     </footer>
 
-    <!-- STAR RATING JAVASCRIPT -->
+    <!-- =========================================================
+         STAR RATING JAVASCRIPT
+
+         Only load this when the viewer is a customer.
+         ========================================================= -->
+
+    {% if not is_owner %}
 
     <script>
       const stars = document.querySelectorAll(".rating-star");
@@ -288,13 +355,15 @@
         });
       });
 
-      document
-        .querySelector(".star-rating")
-        .addEventListener("mouseleave", () => {
+      const starContainer = document.querySelector(".star-rating");
+
+      if (starContainer) {
+        starContainer.addEventListener("mouseleave", () => {
           const selectedRating = Number(ratingInput.value);
 
           highlightStars(selectedRating);
         });
+      }
 
       function highlightStars(rating) {
         stars.forEach((star) => {
@@ -308,5 +377,7 @@
         });
       }
     </script>
+
+    {% endif %}
   </body>
 </html>

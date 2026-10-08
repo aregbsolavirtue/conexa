@@ -5,7 +5,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Conexa | Profile Created</title>
+    <title>Conexa | Welcome</title>
 
     <link
       rel="stylesheet"
@@ -17,29 +17,39 @@
     <nav class="navbar">
       <div class="logo">Con<span>exa</span></div>
 
-      <a href="/"> Back Home </a>
+      <a href="/"> Home </a>
     </nav>
-    <div class="page-back">
-      <button onclick="history.back()" class="back-arrow">
-        <span class="arrow-icon">←</span>
-        <span>Back</span>
-      </button>
-    </div>
 
-    <section class="success-section">
-      <div class="success-container">
-        <div class="success-icon">✓</div>
+    <section class="account-result-section">
+      <div class="account-result-card success-card">
+        <div class="account-success-icon">✓</div>
 
         <p class="small-heading">WELCOME TO CONEXA</p>
 
-        <h1>Your artisan profile has been created!</h1>
+        <h1>Your Artisan Account Is Ready</h1>
 
-        <p>
-          Customers can now find your services when they search for artisans in
-          your area.
+        <p class="account-result-message">
+          Your account has been successfully created. You can now build your
+          profile, connect with customers, and grow your business through
+          Conexa.
         </p>
 
-        <a href="/" class="success-button"> Back to Home </a>
+        <div class="account-next-step">
+          <strong> What's next? </strong>
+
+          <p>
+            Sign in to your artisan account to access your dashboard and manage
+            your Conexa profile.
+          </p>
+        </div>
+
+        <div class="account-result-actions">
+          <a href="/" class="primary-button"> Continue to Conexa </a>
+
+          <a href="/artisan/{{ artisan_id }}" class="secondary-button">
+            View My Profile
+          </a>
+        </div>
       </div>
     </section>
 
@@ -47,6 +57,8 @@
       <div class="logo">Con<span>exa</span></div>
 
       <p>Connecting you with skilled artisans.</p>
+
+      <p class="copyright">© 2026 Conexa</p>
     </footer>
   </body>
 </html>

@@ -1,168 +1,144 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 app = Flask(__name__)
 
+app.secret_key = "conexa-development-secret-key"
+
+
+# =========================================================
+# DATABASE CONNECTION
+# =========================================================
 
 def get_db_connection():
-
     conn = sqlite3.connect("database.db")
-
     conn.row_factory = sqlite3.Row
-
     return conn
 
 
-def create_database():
+# =========================================================
+# CREATE DATABASE
+# =========================================================
 
+def create_database():
     conn = get_db_connection()
 
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS artisans ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "name TEXT NOT NULL, "
-        "service TEXT NOT NULL, "
-        "location TEXT NOT NULL, "
-        "phone TEXT NOT NULL, "
-        "experience TEXT NOT NULL, "
-        "rating REAL DEFAULT 0, "
-        "verified INTEGER DEFAULT 0"
-        ")"
-    )
+    # -----------------------------------------------------
+    # ARTISANS TABLE
+    # -----------------------------------------------------
 
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS service_requests ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "customer_name TEXT NOT NULL, "
-        "phone TEXT NOT NULL, "
-        "service TEXT NOT NULL, "
-        "location TEXT NOT NULL, "
-        "description TEXT NOT NULL, "
-        "artisan_id INTEGER, "
-        "status TEXT DEFAULT 'Pending', "
-        "FOREIGN KEY (artisan_id) REFERENCES artisans(id)"
-        ")"
-    )
-
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS reviews ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "artisan_id INTEGER NOT NULL, "
-        "reviewer_name TEXT NOT NULL, "
-        "rating INTEGER NOT NULL, "
-        "comment TEXT NOT NULL, "
-        "FOREIGN KEY (artisan_id) REFERENCES artisans(id)"
-        ")"
-    )
-
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS verification_requests ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "artisan_id INTEGER NOT NULL, "
-        "full_name TEXT NOT NULL, "
-        "service TEXT NOT NULL, "
-        "location TEXT NOT NULL, "
-        "phone TEXT NOT NULL, "
-        "years_experience TEXT NOT NULL, "
-        "verification_note TEXT NOT NULL, "
-        "status TEXT DEFAULT 'Pending', "
-        "FOREIGN KEY (artisan_id) REFERENCES artisans(id)"
-        ")"
-    )
-
-    columns = conn.execute(
-        "PRAGMA table_info(artisans)"
-    ).fetchall()
-
-    column_names = []
-
-    for column in columns:
-        column_names.append(column["name"])
-
-    if "verified" not in column_names:
-
-        conn.execute(
-            "ALTER TABLE artisans "
-            "ADD COLUMN verified INTEGER DEFAULT 0"
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS artisans (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            service TEXT NOT NULL,
+            location TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            experience TEXT NOT NULL,
+            rating REAL DEFAULT 0,
+            verified INTEGER DEFAULT 0
         )
+    """)
+
+    artisan_columns = [
+        "email TEXT",
+        "password_hash TEXT",
+        "country TEXT",
+        "state_region TEXT",
+        "city_area TEXT"
+    ]
+
+    existing_columns = [
+        row["name"]
+        for row in conn.execute(
+            "PRAGMA table_info(artisans)"
+        ).fetchall()
+    ]
+
+    for column_definition in artisan_columns:
+        column_name = column_definition.split()[0]
+
+        if column_name not in existing_columns:
+            conn.execute(
+                f"ALTER TABLE artisans ADD COLUMN {column_definition}"
+            )
+
+    # -----------------------------------------------------
+    # SERVICE REQUESTS TABLE
+    # -----------------------------------------------------
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS service_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_name TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            service TEXT NOT NULL,
+            location TEXT NOT NULL,
+            description TEXT NOT NULL,
+            artisan_id INTEGER,
+            status TEXT DEFAULT 'Pending',
+            FOREIGN KEY (artisan_id)
+                REFERENCES artisans(id)
+        )
+    """)
+
+    # -----------------------------------------------------
+    # REVIEWS TABLE
+    # -----------------------------------------------------
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            artisan_id INTEGER NOT NULL,
+            reviewer_name TEXT NOT NULL,
+            rating INTEGER NOT NULL,
+            comment TEXT NOT NULL,
+            FOREIGN KEY (artisan_id)
+                REFERENCES artisans(id)
+        )
+    """)
+
+    # -----------------------------------------------------
+    # VERIFICATION REQUESTS TABLE
+    # -----------------------------------------------------
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS verification_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            artisan_id INTEGER NOT NULL,
+            full_name TEXT NOT NULL,
+            service TEXT NOT NULL,
+            location TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            years_experience TEXT NOT NULL,
+            verification_note TEXT NOT NULL,
+            status TEXT DEFAULT 'Pending',
+            FOREIGN KEY (artisan_id)
+                REFERENCES artisans(id)
+        )
+    """)
 
     conn.commit()
-
     conn.close()
 
 
-def add_sample_artisans():
-
-    conn = get_db_connection()
-
-    existing_artisans = conn.execute(
-        "SELECT COUNT(*) AS total "
-        "FROM artisans"
-    ).fetchone()
-
-    if existing_artisans["total"] == 0:
-
-        sample_artisans = [
-            (
-                "Adewale Electrical Services",
-                "Electrician",
-                "Yaba",
-                "08012345678",
-                "5",
-                3.5,
-                0
-            ),
-            (
-                "Chinedu Plumbing Services",
-                "Plumber",
-                "Surulere",
-                "08023456789",
-                "7",
-                4.6,
-                0
-            ),
-            (
-                "Emeka Woodworks",
-                "Carpenter",
-                "Ikeja",
-                "08034567890",
-                "8",
-                4.9,
-                0
-            ),
-            (
-                "Kunle AC Services",
-                "AC Technician",
-                "Lekki",
-                "08045678901",
-                "6",
-                4.7,
-                0
-            )
-        ]
-
-        conn.executemany(
-            "INSERT INTO artisans "
-            "(name, service, location, phone, experience, rating, verified) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            sample_artisans
-        )
-
-        conn.commit()
-
-    conn.close()
-
+# =========================================================
+# HOME
+# =========================================================
 
 @app.route("/")
 def home():
-
     return render_template("index.html")
 
 
+# =========================================================
+# SEARCH
+# =========================================================
+
 @app.route("/search")
 def search():
-
     service = request.args.get(
         "service",
         ""
@@ -175,47 +151,27 @@ def search():
 
     conn = get_db_connection()
 
-    query = (
-        "SELECT "
-        "artisans.*, "
-        "COUNT(reviews.id) AS review_count "
-        "FROM artisans "
-        "LEFT JOIN reviews "
-        "ON artisans.id = reviews.artisan_id "
-        "WHERE 1 = 1 "
-    )
+    query = """
+        SELECT *
+        FROM artisans
+        WHERE 1 = 1
+    """
 
-    parameters = []
+    params = []
 
     if service:
-
-        query += (
-            "AND artisans.service LIKE ? "
-        )
-
-        parameters.append(
-            "%" + service + "%"
-        )
+        query += " AND service LIKE ?"
+        params.append(f"%{service}%")
 
     if location:
+        query += " AND location LIKE ?"
+        params.append(f"%{location}%")
 
-        query += (
-            "AND artisans.location LIKE ? "
-        )
-
-        parameters.append(
-            "%" + location + "%"
-        )
-
-    query += (
-        "GROUP BY artisans.id "
-        "ORDER BY artisans.verified DESC, "
-        "artisans.rating DESC"
-    )
+    query += " ORDER BY verified DESC, rating DESC"
 
     artisans = conn.execute(
         query,
-        parameters
+        params
     ).fetchall()
 
     conn.close()
@@ -228,48 +184,65 @@ def search():
     )
 
 
+# =========================================================
+# ARTISAN PROFILE
+# =========================================================
+
 @app.route("/artisan/<int:artisan_id>")
 def artisan_profile(artisan_id):
-
     conn = get_db_connection()
 
     artisan = conn.execute(
-        "SELECT * "
-        "FROM artisans "
-        "WHERE id = ?",
+        """
+        SELECT *
+        FROM artisans
+        WHERE id = ?
+        """,
         (artisan_id,)
     ).fetchone()
 
-    if artisan is None:
-
-        conn.close()
-
-        return "Artisan not found.", 404
-
     reviews = conn.execute(
-        "SELECT * "
-        "FROM reviews "
-        "WHERE artisan_id = ? "
-        "ORDER BY id DESC",
+        """
+        SELECT *
+        FROM reviews
+        WHERE artisan_id = ?
+        ORDER BY id DESC
+        """,
         (artisan_id,)
     ).fetchall()
 
     review_count = conn.execute(
-        "SELECT COUNT(*) AS total "
-        "FROM reviews "
-        "WHERE artisan_id = ?",
+        """
+        SELECT COUNT(*)
+        FROM reviews
+        WHERE artisan_id = ?
+        """,
         (artisan_id,)
-    ).fetchone()["total"]
+    ).fetchone()[0]
 
     conn.close()
+
+    if artisan is None:
+        return "Artisan not found.", 404
+
+    logged_in_artisan_id = session.get(
+        "artisan_id"
+    )
+
+    is_owner = logged_in_artisan_id == artisan_id
 
     return render_template(
         "artisan.html",
         artisan=artisan,
         reviews=reviews,
-        review_count=review_count
+        review_count=review_count,
+        is_owner=is_owner
     )
 
+
+# =========================================================
+# CUSTOMER SERVICE REQUEST
+# =========================================================
 
 @app.route(
     "/request/<int:artisan_id>",
@@ -280,16 +253,17 @@ def request_service(artisan_id):
     conn = get_db_connection()
 
     artisan = conn.execute(
-        "SELECT * "
-        "FROM artisans "
-        "WHERE id = ?",
+        """
+        SELECT *
+        FROM artisans
+        WHERE id = ?
+        """,
         (artisan_id,)
     ).fetchone()
 
+    conn.close()
+
     if artisan is None:
-
-        conn.close()
-
         return "Artisan not found.", 404
 
     if request.method == "POST":
@@ -304,6 +278,11 @@ def request_service(artisan_id):
             ""
         ).strip()
 
+        service = request.form.get(
+            "service",
+            ""
+        ).strip()
+
         location = request.form.get(
             "location",
             ""
@@ -314,33 +293,49 @@ def request_service(artisan_id):
             ""
         ).strip()
 
-        if (
-            not customer_name
-            or not phone
-            or not location
-            or not description
-        ):
+        if not all([
+            customer_name,
+            phone,
+            service,
+            location,
+            description
+        ]):
+            return render_template(
+                "register_error.html",
+                error_title="Missing Information",
+                error_message=(
+                    "Please fill in all the required "
+                    "service request fields."
+                )
+            ), 400
 
-            conn.close()
-
-            return "Please fill in all required fields.", 400
+        conn = get_db_connection()
 
         conn.execute(
-            "INSERT INTO service_requests "
-            "(customer_name, phone, service, location, description, artisan_id) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            """
+            INSERT INTO service_requests (
+                customer_name,
+                phone,
+                service,
+                location,
+                description,
+                artisan_id,
+                status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
             (
                 customer_name,
                 phone,
-                artisan["service"],
+                service,
                 location,
                 description,
-                artisan_id
+                artisan_id,
+                "Pending"
             )
         )
 
         conn.commit()
-
         conn.close()
 
         return render_template(
@@ -348,19 +343,31 @@ def request_service(artisan_id):
             artisan=artisan
         )
 
-    conn.close()
-
     return render_template(
         "request.html",
         artisan=artisan
     )
 
 
+# =========================================================
+# SUBMIT REVIEW
+# =========================================================
+
 @app.route(
     "/review/<int:artisan_id>",
     methods=["POST"]
 )
 def submit_review(artisan_id):
+
+    logged_in_artisan_id = session.get(
+        "artisan_id"
+    )
+
+    if logged_in_artisan_id == artisan_id:
+        return (
+            "Artisans cannot leave reviews for their own profiles.",
+            403
+        )
 
     reviewer_name = request.form.get(
         "reviewer_name",
@@ -378,40 +385,60 @@ def submit_review(artisan_id):
     ).strip()
 
     if not reviewer_name or not rating or not comment:
-
-        return "Please fill in all review fields.", 400
+        return render_template(
+            "register_error.html",
+            error_title="Missing Review Information",
+            error_message=(
+                "Please complete all review fields."
+            )
+        ), 400
 
     try:
-
         rating = int(rating)
 
     except ValueError:
-
-        return "Invalid rating.", 400
+        return render_template(
+            "register_error.html",
+            error_title="Invalid Rating",
+            error_message=(
+                "Please provide a valid rating."
+            )
+        ), 400
 
     if rating < 1 or rating > 5:
-
-        return "Rating must be between 1 and 5.", 400
+        return render_template(
+            "register_error.html",
+            error_title="Invalid Rating",
+            error_message=(
+                "Rating must be between 1 and 5."
+            )
+        ), 400
 
     conn = get_db_connection()
 
     artisan = conn.execute(
-        "SELECT id "
-        "FROM artisans "
-        "WHERE id = ?",
+        """
+        SELECT *
+        FROM artisans
+        WHERE id = ?
+        """,
         (artisan_id,)
     ).fetchone()
 
     if artisan is None:
-
         conn.close()
-
         return "Artisan not found.", 404
 
     conn.execute(
-        "INSERT INTO reviews "
-        "(artisan_id, reviewer_name, rating, comment) "
-        "VALUES (?, ?, ?, ?)",
+        """
+        INSERT INTO reviews (
+            artisan_id,
+            reviewer_name,
+            rating,
+            comment
+        )
+        VALUES (?, ?, ?, ?)
+        """,
         (
             artisan_id,
             reviewer_name,
@@ -420,33 +447,39 @@ def submit_review(artisan_id):
         )
     )
 
-    rating_data = conn.execute(
-        "SELECT AVG(rating) AS average_rating "
-        "FROM reviews "
-        "WHERE artisan_id = ?",
+    average_rating = conn.execute(
+        """
+        SELECT AVG(rating)
+        FROM reviews
+        WHERE artisan_id = ?
+        """,
         (artisan_id,)
-    ).fetchone()
-
-    average_rating = rating_data["average_rating"]
+    ).fetchone()[0]
 
     conn.execute(
-        "UPDATE artisans "
-        "SET rating = ? "
-        "WHERE id = ?",
+        """
+        UPDATE artisans
+        SET rating = ?
+        WHERE id = ?
+        """,
         (
-            average_rating,
+            round(average_rating or 0, 1),
             artisan_id
         )
     )
 
     conn.commit()
-
     conn.close()
 
     return render_template(
-        "review_success.html"
+        "review_success.html",
+        artisan=artisan
     )
 
+
+# =========================================================
+# ARTISAN REGISTRATION
+# =========================================================
 
 @app.route(
     "/register",
@@ -476,27 +509,134 @@ def register():
             ""
         ).strip()
 
+        email = request.form.get(
+            "email",
+            ""
+        ).strip()
+
+        password = request.form.get(
+            "password",
+            ""
+        ).strip()
+
+        country = request.form.get(
+            "country",
+            ""
+        ).strip()
+
+        state_region = request.form.get(
+            "state_region",
+            ""
+        ).strip()
+
+        city_area = request.form.get(
+            "city_area",
+            ""
+        ).strip()
+
         experience = request.form.get(
             "experience",
             ""
         ).strip()
 
-        if (
-            not name
-            or not service
-            or not location
-            or not phone
-            or not experience
-        ):
+        if not all([
+            name,
+            service,
+            location,
+            phone,
+            password,
+            country,
+            state_region,
+            city_area,
+            experience
+        ]):
+            return render_template(
+                "register_error.html",
+                error_title="Missing Information",
+                error_message=(
+                    "Please complete all required "
+                    "registration fields."
+                )
+            ), 400
 
-            return "Please fill in all registration fields.", 400
+        if len(password) < 6:
+            return render_template(
+                "register_error.html",
+                error_title="Password Too Short",
+                error_message=(
+                    "Your password must be at least "
+                    "6 characters long."
+                )
+            ), 400
 
         conn = get_db_connection()
 
+        existing_phone = conn.execute(
+            """
+            SELECT id
+            FROM artisans
+            WHERE phone = ?
+            """,
+            (phone,)
+        ).fetchone()
+
+        if existing_phone:
+            conn.close()
+
+            return render_template(
+                "register_error.html",
+                error_title="Phone Number Already Registered",
+                error_message=(
+                    "An artisan account already exists "
+                    "with this phone number."
+                )
+            ), 400
+
+        if email:
+
+            existing_email = conn.execute(
+                """
+                SELECT id
+                FROM artisans
+                WHERE email = ?
+                """,
+                (email,)
+            ).fetchone()
+
+            if existing_email:
+                conn.close()
+
+                return render_template(
+                    "register_error.html",
+                    error_title="Email Already Registered",
+                    error_message=(
+                        "An artisan account already exists "
+                        "with this email address."
+                    )
+                ), 400
+
+        password_hash = generate_password_hash(
+            password
+        )
+
         cursor = conn.execute(
-            "INSERT INTO artisans "
-            "(name, service, location, phone, experience, rating, verified) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            """
+            INSERT INTO artisans (
+                name,
+                service,
+                location,
+                phone,
+                experience,
+                rating,
+                verified,
+                email,
+                password_hash,
+                country,
+                state_region,
+                city_area
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
             (
                 name,
                 service,
@@ -504,19 +644,24 @@ def register():
                 phone,
                 experience,
                 0,
-                0
+                0,
+                email or None,
+                password_hash,
+                country,
+                state_region,
+                city_area
             )
         )
 
         artisan_id = cursor.lastrowid
 
         conn.commit()
-
         conn.close()
 
         return render_template(
             "success.html",
-            artisan_id=artisan_id
+            artisan_id=artisan_id,
+            name=name
         )
 
     return render_template(
@@ -524,46 +669,577 @@ def register():
     )
 
 
+# =========================================================
+# ARTISAN LOGIN
+# =========================================================
+
+@app.route(
+    "/login",
+    methods=["GET", "POST"]
+)
+def login():
+
+    if request.method == "POST":
+
+        phone = request.form.get(
+            "phone",
+            ""
+        ).strip()
+
+        password = request.form.get(
+            "password",
+            ""
+        ).strip()
+
+        if not phone or not password:
+            return render_template(
+                "register_error.html",
+                error_title="Missing Login Information",
+                error_message=(
+                    "Please enter both your phone number "
+                    "and password to sign in."
+                )
+            ), 400
+
+        conn = get_db_connection()
+
+        artisan = conn.execute(
+            """
+            SELECT *
+            FROM artisans
+            WHERE phone = ?
+            """,
+            (phone,)
+        ).fetchone()
+
+        conn.close()
+
+        if artisan is None:
+            return render_template(
+                "register_error.html",
+                error_title="Invalid Login Details",
+                error_message=(
+                    "The phone number or password you entered "
+                    "is incorrect. Please check your details "
+                    "and try again."
+                )
+            ), 401
+
+        password_hash = artisan["password_hash"]
+
+        if not password_hash:
+            return render_template(
+                "register_error.html",
+                error_title="Account Setup Required",
+                error_message=(
+                    "This artisan account was created before "
+                    "the Conexa login system was introduced. "
+                    "Please create a new artisan account."
+                )
+            ), 401
+
+        if not check_password_hash(
+            password_hash,
+            password
+        ):
+            return render_template(
+                "register_error.html",
+                error_title="Invalid Login Details",
+                error_message=(
+                    "The phone number or password you entered "
+                    "is incorrect. Please check your details "
+                    "and try again."
+                )
+            ), 401
+
+        session.clear()
+
+        session["artisan_id"] = artisan["id"]
+        session["artisan_name"] = artisan["name"]
+
+        return redirect(
+            url_for("artisan_dashboard")
+        )
+
+    return render_template(
+        "login.html"
+    )
+
+
+# =========================================================
+# ARTISAN DASHBOARD
+# =========================================================
+
+@app.route("/artisan/dashboard")
+def artisan_dashboard():
+
+    logged_in_artisan_id = session.get(
+        "artisan_id"
+    )
+
+    if logged_in_artisan_id is None:
+        return redirect(
+            url_for("login")
+        )
+
+    conn = get_db_connection()
+
+    artisan = conn.execute(
+        """
+        SELECT *
+        FROM artisans
+        WHERE id = ?
+        """,
+        (logged_in_artisan_id,)
+    ).fetchone()
+
+    conn.close()
+
+    if artisan is None:
+        session.clear()
+
+        return redirect(
+            url_for("login")
+        )
+
+    return render_template(
+        "artisan_dashboard.html",
+        artisan=artisan
+    )
+
+
+# =========================================================
+# EDIT ARTISAN PROFILE
+# =========================================================
+
+@app.route(
+    "/artisan/edit-profile",
+    methods=["GET", "POST"]
+)
+def edit_profile():
+
+    logged_in_artisan_id = session.get(
+        "artisan_id"
+    )
+
+    if logged_in_artisan_id is None:
+        return redirect(
+            url_for("login")
+        )
+
+    conn = get_db_connection()
+
+    artisan = conn.execute(
+        """
+        SELECT *
+        FROM artisans
+        WHERE id = ?
+        """,
+        (logged_in_artisan_id,)
+    ).fetchone()
+
+    conn.close()
+
+    if artisan is None:
+        session.clear()
+
+        return redirect(
+            url_for("login")
+        )
+
+    if request.method == "POST":
+
+        name = request.form.get(
+            "name",
+            ""
+        ).strip()
+
+        service = request.form.get(
+            "service",
+            ""
+        ).strip()
+
+        phone = request.form.get(
+            "phone",
+            ""
+        ).strip()
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip()
+
+        country = request.form.get(
+            "country",
+            ""
+        ).strip()
+
+        state_region = request.form.get(
+            "state_region",
+            ""
+        ).strip()
+
+        city_area = request.form.get(
+            "city_area",
+            ""
+        ).strip()
+
+        location = request.form.get(
+            "location",
+            ""
+        ).strip()
+
+        experience = request.form.get(
+            "experience",
+            ""
+        ).strip()
+
+        if not all([
+            name,
+            service,
+            phone,
+            country,
+            state_region,
+            city_area,
+            location,
+            experience
+        ]):
+            return render_template(
+                "register_error.html",
+                error_title="Missing Information",
+                error_message=(
+                    "Please complete all required "
+                    "profile fields."
+                )
+            ), 400
+
+        conn = get_db_connection()
+
+        existing_phone = conn.execute(
+            """
+            SELECT id
+            FROM artisans
+            WHERE phone = ?
+            AND id != ?
+            """,
+            (
+                phone,
+                logged_in_artisan_id
+            )
+        ).fetchone()
+
+        if existing_phone:
+            conn.close()
+
+            return render_template(
+                "register_error.html",
+                error_title="Phone Number Already Registered",
+                error_message=(
+                    "Another artisan account is already "
+                    "using this phone number."
+                )
+            ), 400
+
+        if email:
+
+            existing_email = conn.execute(
+                """
+                SELECT id
+                FROM artisans
+                WHERE email = ?
+                AND id != ?
+                """,
+                (
+                    email,
+                    logged_in_artisan_id
+                )
+            ).fetchone()
+
+            if existing_email:
+                conn.close()
+
+                return render_template(
+                    "register_error.html",
+                    error_title="Email Already Registered",
+                    error_message=(
+                        "Another artisan account is already "
+                        "using this email address."
+                    )
+                ), 400
+
+        conn.execute(
+            """
+            UPDATE artisans
+            SET
+                name = ?,
+                service = ?,
+                phone = ?,
+                email = ?,
+                country = ?,
+                state_region = ?,
+                city_area = ?,
+                location = ?,
+                experience = ?
+            WHERE id = ?
+            """,
+            (
+                name,
+                service,
+                phone,
+                email or None,
+                country,
+                state_region,
+                city_area,
+                location,
+                experience,
+                logged_in_artisan_id
+            )
+        )
+
+        conn.commit()
+        conn.close()
+
+        session["artisan_name"] = name
+
+        return redirect(
+            url_for("artisan_dashboard")
+        )
+
+    return render_template(
+        "edit_profile.html",
+        artisan=artisan
+    )
+
+
+# =========================================================
+# LOGOUT
+# =========================================================
+
+@app.route("/logout")
+def logout():
+
+    session.clear()
+
+    return redirect(
+        url_for("home")
+    )
+
+
+# =========================================================
+# ARTISAN SERVICE REQUESTS
+# =========================================================
+
+@app.route(
+    "/artisan/<int:artisan_id>/requests"
+)
+def artisan_requests(artisan_id):
+
+    logged_in_artisan_id = session.get(
+        "artisan_id"
+    )
+
+    if logged_in_artisan_id is None:
+        return redirect(
+            url_for("login")
+        )
+
+    # -----------------------------------------------------
+    # MAKE SURE ARTISAN CAN ONLY VIEW THEIR OWN REQUESTS
+    # -----------------------------------------------------
+
+    if logged_in_artisan_id != artisan_id:
+        return (
+            "You are not authorized to view these requests.",
+            403
+        )
+
+    conn = get_db_connection()
+
+    artisan = conn.execute(
+        """
+        SELECT *
+        FROM artisans
+        WHERE id = ?
+        """,
+        (artisan_id,)
+    ).fetchone()
+
+    requests = conn.execute(
+        """
+        SELECT *
+        FROM service_requests
+        WHERE artisan_id = ?
+        ORDER BY id DESC
+        """,
+        (artisan_id,)
+    ).fetchall()
+
+    conn.close()
+
+    if artisan is None:
+        session.clear()
+
+        return redirect(
+            url_for("login")
+        )
+
+    return render_template(
+        "artisan_requests.html",
+        artisan=artisan,
+        requests=requests
+    )
+
+
+# =========================================================
+# ARTISAN UPDATE REQUEST STATUS
+# =========================================================
+
+@app.route(
+    "/artisan/request/<int:request_id>/status",
+    methods=["POST"]
+)
+def update_artisan_request_status(request_id):
+
+    logged_in_artisan_id = session.get(
+        "artisan_id"
+    )
+
+    # -----------------------------------------------------
+    # ARTISAN MUST BE LOGGED IN
+    # -----------------------------------------------------
+
+    if logged_in_artisan_id is None:
+        return redirect(
+            url_for("login")
+        )
+
+    # -----------------------------------------------------
+    # GET REQUESTED STATUS
+    # -----------------------------------------------------
+
+    status = request.form.get(
+        "status",
+        ""
+    ).strip()
+
+    allowed_statuses = [
+        "Pending",
+        "In Progress",
+        "Completed"
+    ]
+
+    # -----------------------------------------------------
+    # VALIDATE STATUS
+    # -----------------------------------------------------
+
+    if status not in allowed_statuses:
+        return (
+            "Invalid request status.",
+            400
+        )
+
+    conn = get_db_connection()
+
+    # -----------------------------------------------------
+    # FIND REQUEST AND VERIFY OWNERSHIP
+    # -----------------------------------------------------
+
+    service_request = conn.execute(
+        """
+        SELECT *
+        FROM service_requests
+        WHERE id = ?
+        AND artisan_id = ?
+        """,
+        (
+            request_id,
+            logged_in_artisan_id
+        )
+    ).fetchone()
+
+    if service_request is None:
+        conn.close()
+
+        return (
+            "Service request not found or "
+            "you are not authorized to manage it.",
+            403
+        )
+
+    # -----------------------------------------------------
+    # UPDATE REQUEST STATUS
+    # -----------------------------------------------------
+
+    conn.execute(
+        """
+        UPDATE service_requests
+        SET status = ?
+        WHERE id = ?
+        AND artisan_id = ?
+        """,
+        (
+            status,
+            request_id,
+            logged_in_artisan_id
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+    # -----------------------------------------------------
+    # RETURN TO ARTISAN REQUESTS
+    # -----------------------------------------------------
+
+    return redirect(
+        url_for(
+            "artisan_requests",
+            artisan_id=logged_in_artisan_id
+        )
+    )
+
+
+# =========================================================
+# ARTISAN VERIFICATION
+# =========================================================
+
 @app.route(
     "/verify/<int:artisan_id>",
     methods=["GET", "POST"]
 )
 def verify_artisan(artisan_id):
 
+    logged_in_artisan_id = session.get(
+        "artisan_id"
+    )
+
+    if logged_in_artisan_id is None:
+        return redirect(
+            url_for("login")
+        )
+
+    if logged_in_artisan_id != artisan_id:
+        return (
+            "You are not authorized to submit "
+            "verification for this artisan.",
+            403
+        )
+
     conn = get_db_connection()
 
     artisan = conn.execute(
-        "SELECT * "
-        "FROM artisans "
-        "WHERE id = ?",
+        """
+        SELECT *
+        FROM artisans
+        WHERE id = ?
+        """,
         (artisan_id,)
     ).fetchone()
+
+    conn.close()
 
     if artisan is None:
-
-        conn.close()
-
         return "Artisan not found.", 404
-
-    if artisan["verified"] == 1:
-
-        conn.close()
-
-        return "This artisan is already verified.", 400
-
-    pending_request = conn.execute(
-        "SELECT id "
-        "FROM verification_requests "
-        "WHERE artisan_id = ? "
-        "AND status = 'Pending'",
-        (artisan_id,)
-    ).fetchone()
-
-    if pending_request is not None:
-
-        conn.close()
-
-        return "A verification request is already pending.", 400
 
     if request.method == "POST":
 
@@ -597,24 +1273,62 @@ def verify_artisan(artisan_id):
             ""
         ).strip()
 
-        if (
-            not full_name
-            or not service
-            or not location
-            or not phone
-            or not years_experience
-            or not verification_note
-        ):
+        if not all([
+            full_name,
+            service,
+            location,
+            phone,
+            years_experience,
+            verification_note
+        ]):
+            return render_template(
+                "register_error.html",
+                error_title="Missing Verification Information",
+                error_message=(
+                    "Please complete all verification "
+                    "fields before submitting."
+                )
+            ), 400
 
+        conn = get_db_connection()
+
+        existing_request = conn.execute(
+            """
+            SELECT id
+            FROM verification_requests
+            WHERE artisan_id = ?
+            AND status = 'Pending'
+            """,
+            (artisan_id,)
+        ).fetchone()
+
+        if existing_request:
             conn.close()
 
-            return "Please fill in all verification fields.", 400
+            return render_template(
+                "register_error.html",
+                error_title="Verification Already Submitted",
+                error_message=(
+                    "You already have a pending verification "
+                    "request. Please wait for an admin to "
+                    "review it."
+                )
+            ), 400
 
         conn.execute(
-            "INSERT INTO verification_requests "
-            "(artisan_id, full_name, service, location, phone, "
-            "years_experience, verification_note, status) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            """
+            INSERT INTO verification_requests (
+                artisan_id,
+                full_name,
+                service,
+                location,
+                phone,
+                years_experience,
+                verification_note,
+                status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
             (
                 artisan_id,
                 full_name,
@@ -628,7 +1342,6 @@ def verify_artisan(artisan_id):
         )
 
         conn.commit()
-
         conn.close()
 
         return render_template(
@@ -636,77 +1349,112 @@ def verify_artisan(artisan_id):
             artisan=artisan
         )
 
-    conn.close()
-
     return render_template(
         "verification.html",
         artisan=artisan
     )
 
 
+# =========================================================
+# ADMIN DASHBOARD
+# =========================================================
+
 @app.route("/admin")
 def admin():
 
     conn = get_db_connection()
 
-    verification_requests = conn.execute(
-        "SELECT * "
-        "FROM verification_requests "
-        "ORDER BY "
-        "CASE "
-        "WHEN status = 'Pending' THEN 1 "
-        "ELSE 2 "
-        "END, "
-        "id DESC"
+    artisans = conn.execute(
+        """
+        SELECT *
+        FROM artisans
+        ORDER BY id DESC
+        """
+    ).fetchall()
+
+    pending_verifications = conn.execute(
+        """
+        SELECT
+            verification_requests.*,
+            artisans.name AS artisan_name
+        FROM verification_requests
+        JOIN artisans
+            ON verification_requests.artisan_id = artisans.id
+        WHERE verification_requests.status = 'Pending'
+        ORDER BY verification_requests.id DESC
+        """
+    ).fetchall()
+
+    pending_requests = conn.execute(
+        """
+        SELECT *
+        FROM service_requests
+        WHERE status = 'Pending'
+        ORDER BY id DESC
+        """
     ).fetchall()
 
     conn.close()
 
     return render_template(
         "admin.html",
-        requests=verification_requests
+        artisans=artisans,
+        pending_verifications=pending_verifications,
+        pending_requests=pending_requests
     )
 
 
+# =========================================================
+# ADMIN APPROVE VERIFICATION
+# =========================================================
+
 @app.route(
-    "/admin/verification/<int:request_id>/approve",
-    methods=["POST"]
+    "/admin/verification/<int:request_id>/approve"
 )
 def approve_verification(request_id):
 
     conn = get_db_connection()
 
     verification_request = conn.execute(
-        "SELECT artisan_id "
-        "FROM verification_requests "
-        "WHERE id = ?",
+        """
+        SELECT *
+        FROM verification_requests
+        WHERE id = ?
+        """,
         (request_id,)
     ).fetchone()
 
     if verification_request is None:
-
         conn.close()
 
-        return "Verification request not found.", 404
+        return (
+            "Verification request not found.",
+            404
+        )
 
-    artisan_id = verification_request["artisan_id"]
-
-    conn.execute(
-        "UPDATE verification_requests "
-        "SET status = 'Approved' "
-        "WHERE id = ?",
-        (request_id,)
-    )
+    artisan_id = verification_request[
+        "artisan_id"
+    ]
 
     conn.execute(
-        "UPDATE artisans "
-        "SET verified = 1 "
-        "WHERE id = ?",
+        """
+        UPDATE artisans
+        SET verified = 1
+        WHERE id = ?
+        """,
         (artisan_id,)
     )
 
-    conn.commit()
+    conn.execute(
+        """
+        UPDATE verification_requests
+        SET status = 'Approved'
+        WHERE id = ?
+        """,
+        (request_id,)
+    )
 
+    conn.commit()
     conn.close()
 
     return redirect(
@@ -714,36 +1462,44 @@ def approve_verification(request_id):
     )
 
 
+# =========================================================
+# ADMIN REJECT VERIFICATION
+# =========================================================
+
 @app.route(
-    "/admin/verification/<int:request_id>/reject",
-    methods=["POST"]
+    "/admin/verification/<int:request_id>/reject"
 )
 def reject_verification(request_id):
 
     conn = get_db_connection()
 
     verification_request = conn.execute(
-        "SELECT id "
-        "FROM verification_requests "
-        "WHERE id = ?",
+        """
+        SELECT *
+        FROM verification_requests
+        WHERE id = ?
+        """,
         (request_id,)
     ).fetchone()
 
     if verification_request is None:
-
         conn.close()
 
-        return "Verification request not found.", 404
+        return (
+            "Verification request not found.",
+            404
+        )
 
     conn.execute(
-        "UPDATE verification_requests "
-        "SET status = 'Rejected' "
-        "WHERE id = ?",
+        """
+        UPDATE verification_requests
+        SET status = 'Rejected'
+        WHERE id = ?
+        """,
         (request_id,)
     )
 
     conn.commit()
-
     conn.close()
 
     return redirect(
@@ -751,41 +1507,38 @@ def reject_verification(request_id):
     )
 
 
+# =========================================================
+# ADMIN SERVICE REQUESTS
+# =========================================================
+
 @app.route("/admin/requests")
 def admin_requests():
 
     conn = get_db_connection()
 
-    service_requests = conn.execute(
-        "SELECT "
-        "service_requests.id, "
-        "service_requests.customer_name, "
-        "service_requests.phone, "
-        "service_requests.service, "
-        "service_requests.location, "
-        "service_requests.description, "
-        "service_requests.artisan_id, "
-        "service_requests.status, "
-        "artisans.name AS artisan_name "
-        "FROM service_requests "
-        "LEFT JOIN artisans "
-        "ON service_requests.artisan_id = artisans.id "
-        "ORDER BY "
-        "CASE "
-        "WHEN service_requests.status = 'Pending' THEN 1 "
-        "WHEN service_requests.status = 'In Progress' THEN 2 "
-        "ELSE 3 "
-        "END, "
-        "service_requests.id DESC"
+    requests = conn.execute(
+        """
+        SELECT
+            service_requests.*,
+            artisans.name AS artisan_name
+        FROM service_requests
+        LEFT JOIN artisans
+            ON service_requests.artisan_id = artisans.id
+        ORDER BY service_requests.id DESC
+        """
     ).fetchall()
 
     conn.close()
 
     return render_template(
         "admin_requests.html",
-        requests=service_requests
+        requests=requests
     )
 
+
+# =========================================================
+# ADMIN UPDATE REQUEST STATUS
+# =========================================================
 
 @app.route(
     "/admin/request/<int:request_id>/status",
@@ -805,28 +1558,36 @@ def update_request_status(request_id):
     ]
 
     if status not in allowed_statuses:
-
-        return "Invalid request status.", 400
+        return (
+            "Invalid request status.",
+            400
+        )
 
     conn = get_db_connection()
 
     service_request = conn.execute(
-        "SELECT id "
-        "FROM service_requests "
-        "WHERE id = ?",
+        """
+        SELECT *
+        FROM service_requests
+        WHERE id = ?
+        """,
         (request_id,)
     ).fetchone()
 
     if service_request is None:
-
         conn.close()
 
-        return "Service request not found.", 404
+        return (
+            "Service request not found.",
+            404
+        )
 
     conn.execute(
-        "UPDATE service_requests "
-        "SET status = ? "
-        "WHERE id = ?",
+        """
+        UPDATE service_requests
+        SET status = ?
+        WHERE id = ?
+        """,
         (
             status,
             request_id
@@ -834,7 +1595,6 @@ def update_request_status(request_id):
     )
 
     conn.commit()
-
     conn.close()
 
     return redirect(
@@ -842,22 +1602,21 @@ def update_request_status(request_id):
     )
 
 
+# =========================================================
+# ADMIN ARTISANS
+# =========================================================
+
 @app.route("/admin/artisans")
 def admin_artisans():
 
     conn = get_db_connection()
 
     artisans = conn.execute(
-        "SELECT "
-        "artisans.*, "
-        "COUNT(reviews.id) AS review_count "
-        "FROM artisans "
-        "LEFT JOIN reviews "
-        "ON artisans.id = reviews.artisan_id "
-        "GROUP BY artisans.id "
-        "ORDER BY artisans.verified DESC, "
-        "artisans.rating DESC, "
-        "artisans.name ASC"
+        """
+        SELECT *
+        FROM artisans
+        ORDER BY id DESC
+        """
     ).fetchall()
 
     conn.close()
@@ -868,59 +1627,16 @@ def admin_artisans():
     )
 
 
-@app.route(
-    "/artisan/<int:artisan_id>/requests"
-)
-def artisan_requests(artisan_id):
+# =========================================================
+# CREATE DATABASE ON STARTUP
+# =========================================================
 
-    conn = get_db_connection()
+create_database()
 
-    artisan = conn.execute(
-        "SELECT "
-        "id, "
-        "name, "
-        "service "
-        "FROM artisans "
-        "WHERE id = ?",
-        (artisan_id,)
-    ).fetchone()
 
-    if artisan is None:
-
-        conn.close()
-
-        return "Artisan not found.", 404
-
-    service_requests = conn.execute(
-        "SELECT "
-        "id, "
-        "customer_name, "
-        "phone, "
-        "service, "
-        "location, "
-        "description, "
-        "status "
-        "FROM service_requests "
-        "WHERE artisan_id = ? "
-        "ORDER BY id DESC",
-        (artisan_id,)
-    ).fetchall()
-
-    conn.close()
-
-    return render_template(
-        "artisan_requests.html",
-        artisan=artisan,
-        requests=service_requests
-    )
-
+# =========================================================
+# RUN APPLICATION
+# =========================================================
 
 if __name__ == "__main__":
-
-    create_database()
-
-    add_sample_artisans()
-
-    app.run(
-        debug=True
-    )
+    app.run(debug=True)
